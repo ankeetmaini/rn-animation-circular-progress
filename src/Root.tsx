@@ -15,15 +15,16 @@ const Root: FunctionComponent<Props> = ({
   radius,
   done,
   baseColor,
-  width
+  width,
+  children
 }) => {
   const initialValue1 = done >= 50 ? 0 : 180;
   const initialValue2 = done >= 50 ? 0 : 180;
   const initialValue3 = 0;
-  const animatedValue1 = useRef(new Animated.Value(initialValue1)).current;
-  const animatedValue2 = useRef(new Animated.Value(initialValue2)).current;
-  const animatedValue3 = useRef(new Animated.Value(initialValue3)).current;
-  const timePerDegree = 8000 / 360;
+  const animatedValue1 = new Animated.Value(initialValue1);
+  const animatedValue2 = new Animated.Value(initialValue2);
+  const animatedValue3 = new Animated.Value(initialValue3);
+  const timePerDegree = 2000 / 360;
   const color1 = activeColor;
   const color2 = done >= 50 ? activeColor : passiveColor;
 
@@ -58,7 +59,9 @@ const Root: FunctionComponent<Props> = ({
   };
 
   const secondAnimation = () => {
+    animatedValue1.setValue(initialValue1);
     animatedValue2.setValue(initialValue2);
+    animatedValue3.setValue(initialValue3);
     Animated.timing(animatedValue2, {
       toValue: 180 + done * 3.6,
       duration: done * 3.6 * timePerDegree,
@@ -113,7 +116,7 @@ const Root: FunctionComponent<Props> = ({
   });
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} key={done}>
       <View style={[styles.outer, { backgroundColor: passiveColor }]}>
         {renderHalf(color1, [{ rotate: rotate1 }])}
         {renderHalf(color2, [{ rotate: rotate2 }])}
@@ -128,10 +131,15 @@ const Root: FunctionComponent<Props> = ({
               width: radius,
               height: radius,
               borderRadius: radius,
-              elevation: 1000
+              elevation: 1000,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center"
             }
           ]}
-        ></View>
+        >
+          {children}
+        </View>
       </View>
     </View>
   );
