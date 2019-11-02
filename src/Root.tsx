@@ -1,5 +1,12 @@
 import React, { FunctionComponent, useRef, useEffect, useState } from "react";
-import { StyleSheet, View, Animated, Easing } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Animated,
+  Easing,
+  Alert,
+  ToastAndroid
+} from "react-native";
 const RADIUS = 100;
 type Props = {
   activeColor: string;
@@ -17,31 +24,49 @@ const Root: FunctionComponent<Props> = ({
   baseColor,
   width
 }) => {
-  const rotate1 = useRef(new Animated.Value(0)).current;
-  const rotate2 = useRef(new Animated.Value(180)).current;
-  const [show, setShow] = useState(false);
+  const initialValue1 = done >= 50 ? 0 : 180;
+  const initialValue2 = done >= 50 ? 0 : 180;
+  const initialValue3 = 0;
+  const animatedValue1 = useRef(new Animated.Value(initialValue1)).current;
+  const animatedValue2 = useRef(new Animated.Value(initialValue2)).current;
+  const animatedValue3 = useRef(new Animated.Value(initialValue3)).current;
+  const color = done >= 50 ? activeColor : passiveColor;
 
-  useEffect(() => {
-    rotate1.setValue(0);
-    rotate2.setValue(180);
-    const rotateValue = done >= 50 ? (done - 50) * 3.6 + 180 : 3.6 * done + 180;
-    Animated.sequence([
-      Animated.timing(rotate1, {
-        duration: 800,
-        easing: Easing.linear,
+  const firstAnimation = () => {
+    animatedValue1.setValue(initialValue1);
+    animatedValue2.setValue(initialValue2);
+    animatedValue3.setValue(initialValue3);
+    const timePerDegree = 2000 / 360;
+    Animated.parallel([
+      Animated.timing(animatedValue1, {
         toValue: 180,
-        useNativeDriver: true
+        duration: 180 * timePerDegree,
+        useNativeDriver: true,
+        easing: Easing.linear
       }),
-      Animated.timing(rotate2, {
-        duration: 800,
-        easing: Easing.linear,
-        toValue: rotateValue,
-        useNativeDriver: true
+      Animated.timing(animatedValue2, {
+        toValue: 180 + (done - 50) * 3.6,
+        duration: (180 + (done - 50) * 3.6) * timePerDegree,
+        // duration: 180 * timePerDegree,
+        useNativeDriver: true,
+        easing: Easing.linear
+      }),
+      Animated.timing(animatedValue3, {
+        toValue: (done - 50) * 3.6,
+        delay: 180 * timePerDegree,
+        duration: timePerDegree * ((done - 50) * 3.6),
+        // duration: 180 * timePerDegree,
+        useNativeDriver: true,
+        easing: Easing.linear
       })
     ]).start();
+  };
+
+  useEffect(() => {
+    firstAnimation();
   }, [done]);
 
-  const renderHalf = (color: string, transforms = []) => (
+  const renderHalf = (color: string, transforms = [], otherStyles = {}) => (
     <Animated.View
       style={[
         styles.half,
@@ -53,32 +78,48 @@ const Root: FunctionComponent<Props> = ({
             { translateX: -RADIUS / 2 },
             { scale: 1.004 }
           ]
-        }
+        },
+        otherStyles
       ]}
     ></Animated.View>
   );
-  const color = done >= 50 ? activeColor : passiveColor;
-  const transform1 = rotate1.interpolate({
+
+  const rotate1 = animatedValue1.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "1deg"]
   });
-  const transform2 = rotate2.interpolate({
+  const rotate2 = animatedValue2.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "1deg"]
   });
+
+  const rotate3 = animatedValue3.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "1deg"]
+  });
+
+  const elevation3 = animatedValue3.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -1]
+  });
+
   return (
     <View style={styles.container}>
       <View style={[styles.outer, { backgroundColor: passiveColor }]}>
-        {renderHalf(color, [{ rotate: transform1 }])}
-        {renderHalf(passiveColor, [])}
-        {renderHalf(color, [{ rotate: transform2 }, { scale: 0 }])}
+        {renderHalf(color, [{ rotate: rotate1 }])}
+        {renderHalf(color, [{ rotate: rotate2 }])}
+        {/* to hide the active elements */}
+        {renderHalf(passiveColor, [{ rotate: rotate3 }], {
+          elevation: elevation3
+        })}
         <View
           style={[
             {
               backgroundColor: baseColor,
               width: radius,
               height: radius,
-              borderRadius: radius
+              borderRadius: radius,
+              elevation: 1000
             }
           ]}
         ></View>

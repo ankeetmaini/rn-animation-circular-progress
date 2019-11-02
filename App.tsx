@@ -9,7 +9,7 @@ export default function App() {
         passiveColor="black"
         baseColor="white"
         width={10}
-        done={80}
+        done={85}
         radius={100}
       />
     </>
