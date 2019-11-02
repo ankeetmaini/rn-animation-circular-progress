@@ -1,12 +1,5 @@
 import React, { FunctionComponent, useRef, useEffect, useState } from "react";
-import {
-  StyleSheet,
-  View,
-  Animated,
-  Easing,
-  Alert,
-  ToastAndroid
-} from "react-native";
+import { StyleSheet, View, Animated, Easing } from "react-native";
 const RADIUS = 100;
 type Props = {
   activeColor: string;
@@ -30,13 +23,15 @@ const Root: FunctionComponent<Props> = ({
   const animatedValue1 = useRef(new Animated.Value(initialValue1)).current;
   const animatedValue2 = useRef(new Animated.Value(initialValue2)).current;
   const animatedValue3 = useRef(new Animated.Value(initialValue3)).current;
-  const color = done >= 50 ? activeColor : passiveColor;
+  const timePerDegree = 8000 / 360;
+  const color1 = activeColor;
+  const color2 = done >= 50 ? activeColor : passiveColor;
 
   const firstAnimation = () => {
     animatedValue1.setValue(initialValue1);
     animatedValue2.setValue(initialValue2);
     animatedValue3.setValue(initialValue3);
-    const timePerDegree = 2000 / 360;
+
     Animated.parallel([
       Animated.timing(animatedValue1, {
         toValue: 180,
@@ -62,8 +57,22 @@ const Root: FunctionComponent<Props> = ({
     ]).start();
   };
 
+  const secondAnimation = () => {
+    animatedValue2.setValue(initialValue2);
+    Animated.timing(animatedValue2, {
+      toValue: 180 + done * 3.6,
+      duration: done * 3.6 * timePerDegree,
+      useNativeDriver: true,
+      easing: Easing.linear
+    }).start();
+  };
+
   useEffect(() => {
-    firstAnimation();
+    if (done >= 50) {
+      firstAnimation();
+    } else {
+      secondAnimation();
+    }
   }, [done]);
 
   const renderHalf = (color: string, transforms = [], otherStyles = {}) => (
@@ -106,8 +115,8 @@ const Root: FunctionComponent<Props> = ({
   return (
     <View style={styles.container}>
       <View style={[styles.outer, { backgroundColor: passiveColor }]}>
-        {renderHalf(color, [{ rotate: rotate1 }])}
-        {renderHalf(color, [{ rotate: rotate2 }])}
+        {renderHalf(color1, [{ rotate: rotate1 }])}
+        {renderHalf(color2, [{ rotate: rotate2 }])}
         {/* to hide the active elements */}
         {renderHalf(passiveColor, [{ rotate: rotate3 }], {
           elevation: elevation3
