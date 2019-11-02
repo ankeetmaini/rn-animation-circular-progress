@@ -1,6 +1,5 @@
-import React, { FunctionComponent, useRef, useEffect, useState } from "react";
+import React, { FunctionComponent, useEffect } from "react";
 import { StyleSheet, View, Animated, Easing } from "react-native";
-const RADIUS = 100;
 type Props = {
   activeColor: string;
   passiveColor: string;
@@ -8,30 +7,32 @@ type Props = {
   width: number;
   radius: number;
   done: number;
+  duration: number;
 };
+
 const Root: FunctionComponent<Props> = ({
   activeColor,
   passiveColor,
+  baseColor,
   radius,
   done,
-  baseColor,
   width,
+  duration,
   children
 }) => {
-  const initialValue1 = done >= 50 ? 0 : 180;
-  const initialValue2 = done >= 50 ? 0 : 180;
-  const initialValue3 = 0;
-  const animatedValue1 = new Animated.Value(initialValue1);
-  const animatedValue2 = new Animated.Value(initialValue2);
-  const animatedValue3 = new Animated.Value(initialValue3);
-  const timePerDegree = 2000 / 360;
+  const initialValueHalfCircle = done >= 50 ? 0 : 180;
+  const initialValueInnerCircle = 0;
+  const animatedValue1 = new Animated.Value(initialValueHalfCircle);
+  const animatedValue2 = new Animated.Value(initialValueHalfCircle);
+  const animatedValue3 = new Animated.Value(initialValueInnerCircle);
+  const timePerDegree = duration / 360;
   const color1 = activeColor;
   const color2 = done >= 50 ? activeColor : passiveColor;
 
   const firstAnimation = () => {
-    animatedValue1.setValue(initialValue1);
-    animatedValue2.setValue(initialValue2);
-    animatedValue3.setValue(initialValue3);
+    animatedValue1.setValue(initialValueHalfCircle);
+    animatedValue2.setValue(initialValueHalfCircle);
+    animatedValue3.setValue(initialValueInnerCircle);
 
     Animated.parallel([
       Animated.timing(animatedValue1, {
@@ -43,7 +44,6 @@ const Root: FunctionComponent<Props> = ({
       Animated.timing(animatedValue2, {
         toValue: 180 + (done - 50) * 3.6,
         duration: (180 + (done - 50) * 3.6) * timePerDegree,
-        // duration: 180 * timePerDegree,
         useNativeDriver: true,
         easing: Easing.linear
       }),
@@ -51,7 +51,6 @@ const Root: FunctionComponent<Props> = ({
         toValue: (done - 50) * 3.6,
         delay: 180 * timePerDegree,
         duration: timePerDegree * ((done - 50) * 3.6),
-        // duration: 180 * timePerDegree,
         useNativeDriver: true,
         easing: Easing.linear
       })
@@ -59,9 +58,9 @@ const Root: FunctionComponent<Props> = ({
   };
 
   const secondAnimation = () => {
-    animatedValue1.setValue(initialValue1);
-    animatedValue2.setValue(initialValue2);
-    animatedValue3.setValue(initialValue3);
+    animatedValue1.setValue(initialValueHalfCircle);
+    animatedValue2.setValue(initialValueHalfCircle);
+    animatedValue3.setValue(initialValueInnerCircle);
     Animated.timing(animatedValue2, {
       toValue: 180 + done * 3.6,
       duration: done * 3.6 * timePerDegree,
@@ -83,11 +82,12 @@ const Root: FunctionComponent<Props> = ({
       style={[
         styles.half,
         { backgroundColor: color, borderColor: color },
+        { width: radius, height: radius * 2, borderRadius: radius },
         {
           transform: [
-            { translateX: RADIUS / 2 },
+            { translateX: radius / 2 },
             ...transforms,
-            { translateX: -RADIUS / 2 },
+            { translateX: -radius / 2 },
             { scale: 1.004 }
           ]
         },
@@ -117,10 +117,15 @@ const Root: FunctionComponent<Props> = ({
 
   return (
     <View style={styles.container} key={done}>
-      <View style={[styles.outer, { backgroundColor: passiveColor }]}>
+      <View
+        style={[
+          styles.outer,
+          { backgroundColor: passiveColor },
+          { borderRadius: radius, height: radius * 2, width: radius * 2 }
+        ]}
+      >
         {renderHalf(color1, [{ rotate: rotate1 }])}
         {renderHalf(color2, [{ rotate: rotate2 }])}
-        {/* to hide the active elements */}
         {renderHalf(passiveColor, [{ rotate: rotate3 }], {
           elevation: elevation3
         })}
@@ -128,8 +133,8 @@ const Root: FunctionComponent<Props> = ({
           style={[
             {
               backgroundColor: baseColor,
-              width: radius,
-              height: radius,
+              width: 2 * radius - width,
+              height: 2 * radius - width,
               borderRadius: radius,
               elevation: 1000,
               display: "flex",
@@ -154,9 +159,6 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   outer: {
-    borderRadius: RADIUS,
-    height: RADIUS * 2,
-    width: RADIUS * 2,
     position: "relative",
     justifyContent: "center",
     alignItems: "center"
@@ -165,9 +167,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     top: 0,
-    width: RADIUS,
-    height: RADIUS * 2,
-    borderRadius: RADIUS,
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0
   }

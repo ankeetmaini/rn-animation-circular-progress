@@ -40,12 +40,13 @@ export default function App() {
         </View>
       </View>
       <Root
-        activeColor="orange"
-        passiveColor="grey"
+        activeColor="darkviolet"
+        passiveColor="darkgrey"
         baseColor="white"
-        width={10}
+        width={50}
         done={done}
         radius={100}
+        duration={1200}
       >
         <Text>Wow!</Text>
       </Root>
