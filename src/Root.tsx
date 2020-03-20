@@ -161,7 +161,8 @@ const styles = StyleSheet.create({
   outer: {
     position: "relative",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    overflow: "hidden"
   },
   half: {
     position: "absolute",
