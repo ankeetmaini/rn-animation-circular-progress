@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect } from "react";
-import { StyleSheet, View, Animated, Easing } from "react-native";
+import { StyleSheet, View, Animated, Easing, Platform } from "react-native";
 type Props = {
   activeColor: string;
   passiveColor: string;
@@ -51,7 +51,7 @@ const Root: FunctionComponent<Props> = ({
         toValue: (done - 50) * 3.6,
         delay: 180 * timePerDegree,
         duration: timePerDegree * ((done - 50) * 3.6),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS == "android" ? true : false,
         easing: Easing.linear
       })
     ]).start();
@@ -121,13 +121,15 @@ const Root: FunctionComponent<Props> = ({
         style={[
           styles.outer,
           { backgroundColor: passiveColor },
+
           { borderRadius: radius, height: radius * 2, width: radius * 2 }
         ]}
       >
         {renderHalf(color1, [{ rotate: rotate1 }])}
         {renderHalf(color2, [{ rotate: rotate2 }])}
         {renderHalf(passiveColor, [{ rotate: rotate3 }], {
-          elevation: elevation3
+          elevation: elevation3,
+          zIndex: elevation3
         })}
         <View
           style={[
